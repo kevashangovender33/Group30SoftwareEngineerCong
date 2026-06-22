@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TRIAGE - Customer Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#a4c9fe",
+                        "on-background": "#121c28",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "on-tertiary-container": "#989a9b",
+                        "surface": "#f8f9ff",
+                        "background": "#f8f9ff",
+                        "outline": "#747782",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d9e3f4",
+                        "on-secondary-fixed": "#001c38",
+                        "on-surface-variant": "#444651",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#2d5482",
+                        "surface-container-low": "#eef4ff",
+                        "tertiary-fixed": "#e1e3e4",
+                        "on-primary-fixed": "#001946",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary": "#1a1d1e",
+                        "on-tertiary-fixed": "#191c1d",
+                        "on-primary-container": "#7a97e2",
+                        "surface-tint": "#3d5ca2",
+                        "tertiary-container": "#2f3233",
+                        "secondary": "#3a608f",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed": "#dae2ff",
+                        "primary": "#001a48",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#a4c9fe",
+                        "secondary-fixed": "#d3e3ff",
+                        "inverse-primary": "#b1c5ff",
+                        "on-surface": "#121c28",
+                        "on-primary-fixed-variant": "#224489",
+                        "on-secondary-fixed-variant": "#1f4875",
+                        "surface-container-highest": "#d9e3f4",
+                        "surface-container-high": "#dfe9fa",
+                        "inverse-surface": "#27313e",
+                        "outline-variant": "#c4c6d2",
+                        "primary-container": "#002d72",
+                        "surface-dim": "#d1dbec",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed-dim": "#b1c5ff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "data-tabular": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; color: #121c28; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .active-step { border-bottom: 2px solid #002d72; color: #002d72; font-weight: 700; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar Anchor -->
+<aside class="hidden md:flex flex-col h-screen w-64 bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 z-50">
+<div class="p-6 flex flex-col items-center border-b border-outline-variant">
+<img alt="TRIAGE Logo" class="w-16 h-16 mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFSc9Vd6ri5MbScM5uftCwpXMZJhe9VfKsgdhoEMqPMfbH9pCn4Qlz6aE2AGOZkbiNGne-_0U2-sOTS4s2TW1Ie6GlOmopEH8jnx-I8rJnzxf5bkSFEgisnKSWBxkq100XXqOtmcB5pAZfB1sOVOOG3Cgd8b3i3xLB9CXOf8dRr0sVW4E-Xjd6r62wKn8TLjek49IWq-Jlg7Ef3b1ajkymqNwpKRLl4T6VXUS2zl6Uh3NKqG6Lo-Pj66h7rRiOp0vlaaYiHLaQaTk"/>
+<h1 class="font-headline-md text-headline-md font-black text-primary">Ops Portal</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Internal Triage</p>
+</div>
+<nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+<div class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold cursor-pointer transition-transform active:scale-95">
+<span class="material-symbols-outlined">add_box</span>
+<span class="font-label-md text-label-md">New Dispute</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Dispute History</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<div class="pt-6 pb-2">
+<p class="px-4 text-[10px] font-bold uppercase tracking-widest text-outline">Support</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</div>
+</nav>
+<div class="p-4 mt-auto">
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-label-md flex items-center justify-center gap-2 shadow-sm hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                Create Request
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 flex flex-col min-w-0">
+<!-- TopNavBar Anchor -->
+<header class="bg-surface-container-lowest border-b border-outline-variant h-16 flex justify-between items-center px-margin-desktop sticky top-0 z-40">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary">TRIAGE</span>
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:outline-none focus:ring-2 focus:ring-primary w-64" placeholder="Global Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold text-label-md">
+                        JD
+                    </div>
+<span class="hidden sm:inline font-body-md text-on-surface font-medium">Jane Doe</span>
+</div>
+</div>
+</header>
+<!-- Journey Canvas -->
+<div class="flex-1 p-margin-desktop max-w-container-max mx-auto w-full">
+<!-- Breadcrumbs Navigation -->
+<nav class="flex items-center gap-4 mb-8 py-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+<div class="flex items-center gap-2 active-step px-2 pb-1">
+<span class="font-label-md text-label-md">01</span>
+<span class="font-body-md">Select Customer</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">chevron_right</span>
+<div class="flex items-center gap-2 text-on-surface-variant px-2 pb-1">
+<span class="font-label-md text-label-md opacity-50">02</span>
+<span class="font-body-md">Select Transaction</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">chevron_right</span>
+<div class="flex items-center gap-2 text-on-surface-variant px-2 pb-1">
+<span class="font-label-md text-label-md opacity-50">03</span>
+<span class="font-body-md">Capture Dispute</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">chevron_right</span>
+<div class="flex items-center gap-2 text-on-surface-variant px-2 pb-1">
+<span class="font-label-md text-label-md opacity-50">04</span>
+<span class="font-body-md">Triage Result</span>
+</div>
+</nav>
+<!-- Page Header -->
+<div class="mb-10">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-2">Step 1: Select Customer</h2>
+<p class="font-body-lg text-on-surface-variant max-w-2xl">Search for the customer associated with the dispute request. You can search by legal name, account number, or primary email address.</p>
+</div>
+<!-- Search Area -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-lg shadow-sm mb-8">
+<div class="flex flex-col md:flex-row gap-4">
+<div class="relative flex-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2 uppercase tracking-wider">Search Criteria</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-body-lg" id="customerSearch" placeholder="Enter name or account number (e.g. ACCT-8823)" type="text"/>
+</div>
+</div>
+<div class="flex items-end">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold font-body-md hover:opacity-95 active:scale-95 transition-all h-[50px] flex items-center justify-center">
+                            Search Database
+                        </button>
+</div>
+</div>
+</div>
+<!-- Content Area: Customer Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Customer Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-lg hover:shadow-lg hover:border-primary transition-all group flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary-container">person</span>
+</div>
+<span class="bg-surface-container text-on-secondary-container px-2 py-1 rounded text-[10px] font-bold uppercase">Standard Tier</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Alexander Vance</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mb-4">ACCT-992348501</p>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+<span class="font-body-md">a.vance@corporate.com</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-body-md">Last active: 2h ago</span>
+</div>
+</div>
+</div>
+<button class="w-full border border-secondary text-secondary py-2 rounded-lg font-bold text-label-md group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all">
+                        Select Customer
+                    </button>
+</div>
+<!-- Customer Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-lg hover:shadow-lg hover:border-primary transition-all group flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary-container">person</span>
+</div>
+<span class="bg-primary-fixed text-on-primary-fixed px-2 py-1 rounded text-[10px] font-bold uppercase">Private Banking</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Elena Rodriguez</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mb-4">ACCT-110293442</p>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+<span class="font-body-md">elena.rod@financial.net</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-body-md">Last active: 5m ago</span>
+</div>
+</div>
+</div>
+<button class="w-full border border-secondary text-secondary py-2 rounded-lg font-bold text-label-md group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all">
+                        Select Customer
+                    </button>
+</div>
+<!-- Customer Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-lg hover:shadow-lg hover:border-primary transition-all group flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary-container">person</span>
+</div>
+<span class="bg-error-container text-on-error-container px-2 py-1 rounded text-[10px] font-bold uppercase">Review Needed</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Marcus Thorne</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mb-4">ACCT-882341105</p>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+<span class="font-body-md">m.thorne@techglobal.io</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+<span class="font-body-md text-error">3 Pending Flags</span>
+</div>
+</div>
+</div>
+<button class="w-full border border-secondary text-secondary py-2 rounded-lg font-bold text-label-md group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all">
+                        Select Customer
+                    </button>
+</div>
+<!-- Customer Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-lg hover:shadow-lg hover:border-primary transition-all group flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center group-hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary-container">person</span>
+</div>
+<span class="bg-surface-container text-on-secondary-container px-2 py-1 rounded text-[10px] font-bold uppercase">Standard Tier</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Sarah Jenkins</h3>
+<p class="font-data-tabular text-data-tabular text-on-surface-variant mb-4">ACCT-553421190</p>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+<span class="font-body-md">sjenk88@webmail.com</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-body-md">Verified 2021</span>
+</div>
+</div>
+</div>
+<button class="w-full border border-secondary text-secondary py-2 rounded-lg font-bold text-label-md group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all">
+                        Select Customer
+                    </button>
+</div>
+<!-- Empty State / Add New Placeholder -->
+<div class="border-2 border-dashed border-outline-variant p-6 rounded-lg flex flex-col items-center justify-center text-center bg-transparent group hover:border-primary transition-all cursor-pointer">
+<div class="w-16 h-16 rounded-full border-2 border-dashed border-outline-variant flex items-center justify-center mb-4 group-hover:border-primary group-hover:bg-primary-container">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">person_add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-outline mb-1 group-hover:text-primary">New Customer?</h3>
+<p class="font-body-md text-on-surface-variant mb-6 px-4">If the customer is not in the system, create a new record.</p>
+<button class="text-primary font-bold text-label-md underline">Register New Customer</button>
+</div>
+</div>
+<!-- Recommendation Banner Anchor (Institutional Style) -->
+<div class="mt-12 bg-surface-container-high border-l-[6px] border-secondary p-6 rounded-r-lg shadow-sm">
+<div class="flex gap-4 items-start">
+<div class="p-2 bg-white rounded-full">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">info</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-primary mb-1">Operational Guidance</h4>
+<p class="font-body-md text-on-surface-variant">Selecting the correct customer profile is critical for risk assessment. Ensure the account number matches the documentation exactly to prevent triage mismatch. If account flags are present, consult the Compliance Handbook before proceeding.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile BottomNavBar Anchor -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center z-50">
+<div class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_box</span>
+<span class="text-[10px] font-bold">New</span>
+</div>
+<div class="flex flex-col items-center text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-medium">History</span>
+</div>
+<div class="flex flex-col items-center text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Dash</span>
+</div>
+<div class="flex flex-col items-center text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Tools</span>
+</div>
+</nav>
+<script>
+        // Micro-interaction for search bar
+        const searchInput = document.getElementById('customerSearch');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+
+        // Simple feedback for "Select Customer" buttons
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText.includes('Select Customer')) {
+                btn.addEventListener('click', () => {
+                    const card = btn.closest('div.bg-surface-container-lowest');
+                    card.classList.add('ring-4', 'ring-primary/10', 'scale-[1.02]');
+                    btn.innerHTML = '<span class="flex items-center justify-center gap-2">Selected <span class="material-symbols-outlined text-[18px]">check_circle</span></span>';
+                    btn.classList.replace('text-secondary', 'text-on-primary');
+                    btn.classList.replace('border-secondary', 'bg-primary');
+                    
+                    setTimeout(() => {
+                         // Visual feedback of moving to next step
+                         window.scrollTo({top: 0, behavior: 'smooth'});
+                    }, 500);
+                });
+            }
+        });
+    </script>
+</body></html>

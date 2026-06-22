@@ -19,6 +19,23 @@ These guidelines apply when working on React components in the client.
 - Prefer responsive design with Tailwind breakpoints (`sm:`, `md:`, `lg:`).
 - Use semantic HTML elements for accessibility (`<main>`, `<nav>`, `<section>`, `<button>`, etc.).
 
+## Colour Conventions (REQ-011, REQ-015, REQ-016)
+
+Recommendation banners:
+- Red (`bg-red-*`, `text-red-*`) — Escalate actions (ESCALATE_FRAUD, ESCALATE_SENIOR)
+- Amber (`bg-amber-*`, `text-amber-*`) — Monitor/Investigate actions (MONITOR_24H, INVESTIGATE, REFER_PAYMENTS)
+- Green (`bg-green-*`, `text-green-*`) — Resolve/Close actions (IMMEDIATE_REVERSAL, CLOSE_RESOLVED)
+
+Priority badges:
+- High — Red (`bg-red-100 text-red-800`)
+- Medium — Amber (`bg-amber-100 text-amber-800`)
+- Low — Green (`bg-green-100 text-green-800`)
+
+Age badges:
+- New — Grey (`bg-gray-100 text-gray-800`)
+- Aging — Amber (`bg-amber-100 text-amber-800`)
+- Overdue — Red (`bg-red-100 text-red-800`)
+
 ## State Management
 
 - Use `useState` for local component state.

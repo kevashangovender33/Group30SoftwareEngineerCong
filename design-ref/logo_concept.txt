@@ -1,0 +1,6 @@
+# Intelligent Triage Product Logo
+A clean, professional logo for a banking operations tool. 
+Icon: A stylized shield combined with a funnel or a branching decision tree path, representing "Intelligent Triage" and "Security".
+Colors: Deep Navy (#002D72) and Slate Blue (#5176A6).
+Typography: Modern sans-serif text "TRIA" in bold navy, followed by "GE" in slate blue.
+Overall vibe: Secure, efficient, and precise.

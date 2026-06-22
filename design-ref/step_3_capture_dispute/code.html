@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TRIAGE - Dispute Capture</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .form-input-focus:focus {
+            outline: none;
+            border-color: #001a48;
+            border-width: 2px;
+        }
+        .tonal-layer-1 {
+            background-color: #ffffff;
+            border: 1px solid #E5E7EB;
+        }
+        .tonal-layer-2 {
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .stepper-line {
+            height: 2px;
+            background-color: #E5E7EB;
+            flex-grow: 1;
+            margin: 0 12px;
+        }
+        .stepper-line.active {
+            background-color: #001a48;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#a4c9fe",
+                        "on-background": "#121c28",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "on-tertiary-container": "#989a9b",
+                        "surface": "#f8f9ff",
+                        "background": "#f8f9ff",
+                        "outline": "#747782",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#d9e3f4",
+                        "on-secondary-fixed": "#001c38",
+                        "on-surface-variant": "#444651",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#2d5482",
+                        "surface-container-low": "#eef4ff",
+                        "tertiary-fixed": "#e1e3e4",
+                        "on-primary-fixed": "#001946",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary": "#1a1d1e",
+                        "on-tertiary-fixed": "#191c1d",
+                        "on-primary-container": "#7a97e2",
+                        "surface-tint": "#3d5ca2",
+                        "tertiary-container": "#2f3233",
+                        "secondary": "#3a608f",
+                        "surface-container": "#e5eeff",
+                        "primary-fixed": "#dae2ff",
+                        "primary": "#001a48",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#a4c9fe",
+                        "secondary-fixed": "#d3e3ff",
+                        "inverse-primary": "#b1c5ff",
+                        "on-surface": "#121c28",
+                        "on-primary-fixed-variant": "#224489",
+                        "on-secondary-fixed-variant": "#1f4875",
+                        "surface-container-highest": "#d9e3f4",
+                        "surface-container-high": "#dfe9fa",
+                        "inverse-surface": "#27313e",
+                        "outline-variant": "#c4c6d2",
+                        "primary-container": "#002d72",
+                        "surface-dim": "#d1dbec",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed-dim": "#b1c5ff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "data-tabular": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-surface-container-lowest dark:bg-on-background border-b border-outline-variant dark:border-outline fixed top-0 left-0 right-0 z-50 flex justify-between items-center w-full px-margin-desktop h-16">
+<div class="flex items-center gap-4">
+<img alt="TRIAGE Logo" class="h-8 w-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFSc9Vd6ri5MbScM5uftCwpXMZJhe9VfKsgdhoEMqPMfbH9pCn4Qlz6aE2AGOZkbiNGne-_0U2-sOTS4s2TW1Ie6GlOmopEH8jnx-I8rJnzxf5bkSFEgisnKSWBxkq100XXqOtmcB5pAZfB1sOVOOG3Cgd8b3i3xLB9CXOf8dRr0sVW4E-Xjd6r62wKn8TLjek49IWq-Jlg7Ef3b1ajkymqNwpKRLl4T6VXUS2zl6Uh3NKqG6Lo-Pj66h7rRiOp0vlaaYiHLaQaTk"/>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">TRIAGE</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center space-x-8">
+<nav class="flex space-x-6">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-variant transition-colors font-body-md text-body-md px-2 py-1" href="#">Dashboard</a>
+<a class="text-primary dark:text-primary-fixed font-bold border-b-2 border-primary transition-colors font-body-md text-body-md px-2 py-1" href="#">New Dispute</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-variant transition-colors font-body-md text-body-md px-2 py-1" href="#">History</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:bg-surface-container-low p-2 rounded-full transition-all">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:bg-surface-container-low p-2 rounded-full transition-all">help</span>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate banking operations officer with a neutral background, high-key lighting, wearing a navy blue blazer. The style is sharp, corporate photography with high detail and professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVGPmX_EWsej1HahonTnlgJ1ikeWTq1269g1oy4qIiX4JmoOIdL0uMKX2g8JZvI7DmikFtwRHHKfWCiO7XWICInWC9IT6bNdca5KcRM0HJHL0iov6uOVHuuwCZY3CWjjVxGYvm9165sEKXyOFllR5fOchZhV_nhQOgs818_ZrIXLmwhDTW61yaHaTkwLHqdjcn0r5pVecXAvAAGAdTuaT4RPp40Czd9cR8F3jI0bleqmiVkcHqRn66y0W5jNAcGIN3xZsXayPTDHk"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex min-h-screen pt-16">
+<!-- Side Navigation Bar -->
+<aside class="hidden md:flex flex-col h-[calc(100vh-64px)] w-64 bg-surface dark:bg-on-background border-r border-outline-variant dark:border-outline fixed left-0">
+<div class="p-6">
+<div class="flex flex-col gap-1 mb-8">
+<span class="font-headline-md text-headline-md font-black text-primary">Ops Portal</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Internal Triage</span>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-lg font-bold transition-transform scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined">add_box</span>
+<span class="font-label-md text-label-md">New Dispute</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Dispute History</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-outline-variant">
+<button class="w-full bg-primary text-on-primary py-3 px-4 rounded-lg font-bold text-label-md mb-6 hover:opacity-90 transition-opacity">
+                    Create Request
+                </button>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-8 max-w-[1440px] mx-auto">
+<!-- Breadcrumbs / Progress Stepper -->
+<div class="mb-10 max-w-4xl mx-auto">
+<nav class="flex items-center justify-between w-full">
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Select Customer</span>
+</div>
+<div class="stepper-line active"></div>
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Select Transaction</span>
+</div>
+<div class="stepper-line"></div>
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center ring-4 ring-primary-container">
+<span class="font-bold text-xs">3</span>
+</div>
+<span class="font-label-md text-label-md text-primary">Capture Dispute</span>
+</div>
+<div class="stepper-line"></div>
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center border border-outline-variant">
+<span class="font-bold text-xs">4</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Triage Result</span>
+</div>
+</nav>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-6xl mx-auto">
+<!-- Left Column: Form -->
+<div class="lg:col-span-8">
+<header class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Step 3: Capture Dispute Details</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Provide the necessary details regarding the customer's claim to initiate the automated triage analysis.</p>
+</header>
+<div class="tonal-layer-1 p-8 rounded-lg">
+<form class="space-y-6">
+<!-- Payment Type (Read-only) -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Payment Type</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border border-outline-variant text-on-surface-variant font-body-md text-body-md px-4 py-2.5 rounded cursor-not-allowed" readonly="" type="text" value="Card Payment"/>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant opacity-50">lock</span>
+</div>
+</div>
+<!-- Issue Category (Dropdown) -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Issue Category <span class="text-error">*</span></label>
+<select class="w-full border border-outline-variant text-on-surface font-body-md text-body-md px-4 py-2.5 rounded focus:ring-0 focus:border-primary transition-all" required="">
+<option disabled="" selected="" value="">Select a category...</option>
+<option value="duplicate">Duplicate Debit</option>
+<option value="failed">Failed Transfer</option>
+<option value="missing">Missing Payment</option>
+<option value="unauthorised">Unauthorised Transaction</option>
+<option value="incorrect">Incorrect Amount</option>
+<option value="dispute">Card Dispute</option>
+</select>
+</div>
+<!-- Dispute Notes -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Dispute Notes <span class="text-on-surface-variant opacity-60">(Optional)</span></label>
+<textarea class="w-full border border-outline-variant text-on-surface font-body-md text-body-md px-4 py-2.5 rounded focus:ring-0 focus:border-primary transition-all resize-none" placeholder="Describe the investigation details or customer statement..." rows="6"></textarea>
+</div>
+<!-- Form Actions -->
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant">
+<button class="flex items-center gap-2 text-secondary font-label-md text-label-md px-4 py-2 hover:bg-surface-container transition-colors rounded" type="button">
+<span class="material-symbols-outlined">arrow_back</span>
+                                    Back to Transactions
+                                </button>
+<button class="bg-primary text-on-primary font-bold px-8 py-3 rounded hover:opacity-90 active:scale-95 transition-all shadow-sm" type="submit">
+                                    Run Triage Engine
+                                </button>
+</div>
+</form>
+</div>
+</div>
+<!-- Right Column: Transaction Summary & Context -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Transaction Summary Card -->
+<div class="tonal-layer-1 p-6 rounded-lg border-l-4 border-l-primary">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-headline-md text-headline-md text-primary">Selected Transaction</h2>
+<span class="material-symbols-outlined text-primary" data-weight="fill">receipt_long</span>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-start pb-4 border-b border-outline-variant">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Description</p>
+<p class="font-body-lg text-body-lg font-bold text-on-surface">Whole Foods Market 0124</p>
+</div>
+<span class="bg-surface-container-high px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter">POS</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Date</p>
+<p class="font-data-tabular text-data-tabular text-on-surface">24 Oct 2023, 14:22</p>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase text-right">Amount</p>
+<p class="font-data-tabular text-data-tabular text-on-surface text-right font-bold text-lg">-$142.85</p>
+</div>
+</div>
+<div class="pt-2">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Merchant ID</p>
+<p class="font-data-tabular text-data-tabular text-on-surface">WFM-US-00124-ATL</p>
+</div>
+</div>
+</div>
+<!-- Risk Context Banner -->
+<div class="bg-secondary-container p-5 rounded-lg border border-secondary text-on-secondary-container">
+<div class="flex gap-3">
+<span class="material-symbols-outlined">info</span>
+<div>
+<p class="font-label-md text-label-md font-bold mb-1">Pre-Triage Context</p>
+<p class="font-body-md text-body-md leading-relaxed">This customer has 0 prior disputes in the last 12 months. The transaction matches habitual spending patterns.</p>
+</div>
+</div>
+</div>
+<!-- Guidelines Card -->
+<div class="bg-surface-container-highest p-6 rounded-lg">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase mb-4">Investigator Guidelines</h3>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span class="font-body-md text-body-md">Ensure the category matches the customer's specific claim.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span class="font-body-md text-body-md">Document any police report numbers if 'Unauthorised' is selected.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span class="font-body-md text-body-md">The Triage Engine will take ~10 seconds to process.</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction script -->
+<script>
+        document.querySelectorAll('select, textarea').forEach(element => {
+            element.addEventListener('focus', function() {
+                this.parentElement.closest('.tonal-layer-1').style.borderColor = '#001a48';
+                this.parentElement.closest('.tonal-layer-1').style.transition = 'border-color 0.3s ease';
+            });
+            element.addEventListener('blur', function() {
+                this.parentElement.closest('.tonal-layer-1').style.borderColor = '#E5E7EB';
+            });
+        });
+
+        // Simple form validation visual
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.submitter;
+            btn.innerHTML = '<span class="flex items-center gap-2"><svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Initializing Engine...</span>';
+            btn.classList.add('opacity-70', 'cursor-wait');
+            
+            setTimeout(() => {
+                alert('Triage Engine successfully triggered for Transaction WFM-US-00124-ATL');
+                btn.innerHTML = 'Run Triage Engine';
+                btn.classList.remove('opacity-70', 'cursor-wait');
+            }, 1500);
+        });
+    </script>
+</body></html>

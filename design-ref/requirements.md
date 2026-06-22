@@ -84,7 +84,7 @@ These requirements establish the foundational data structure and enforce the str
 **Rationale:** The operations user needs existing transaction data to lodge disputes against. Seed data provides a realistic starting point.
 
 **Acceptance Criteria:**
-- On server start, the database is seeded with at least 6 mock customers and 20 mock transactions if not already present.
+- On server start, the database is seeded with at least 10 mock customers and 20 mock transactions if not already present.
 - Mock transactions span all three payment types.
 - Mock transactions include varying statuses: Completed, Pending, Failed, Already Refunded.
 - Mock transactions include varying amounts (below and above the high-value threshold).

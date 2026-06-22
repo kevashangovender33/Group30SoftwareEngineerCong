@@ -12,6 +12,8 @@ These conventions apply when working on Express route handlers.
 - Each domain/resource gets its own Router file in `server/src/routes/`.
 - Routers are mounted under `/api` in the main server entry point.
 - Use RESTful patterns: `GET /api/resources`, `POST /api/resources`, `GET /api/resources/:id`, etc.
+- Route handlers should be thin: validate input, call a service, return the response.
+- Complex business logic (rules engine, triage evaluation) lives in `server/src/services/`.
 
 ## Request/Response Patterns
 

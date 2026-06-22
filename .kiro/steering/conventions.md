@@ -12,10 +12,12 @@
 
 - Place route handlers in `server/src/routes/` as separate Router modules.
 - Mount routers under `/api` in `server/src/index.ts`.
+- Place business logic (rules engine, calculators) in `server/src/services/`.
 - Use `server/src/middleware/` for Express middleware (error handlers, auth, validation).
 - Use Prisma for all database access. Never write raw SQL unless absolutely necessary.
-- Keep controller logic thin — extract business logic into service modules when it grows.
+- Keep controller logic thin — route handlers validate input and call services, services contain the logic.
 - Import paths must include the `.js` extension (Node ESM resolution): `import { foo } from './bar.js'`.
+- Define configurable thresholds (e.g., HIGH_VALUE_THRESHOLD = 10000) as constants in a shared config module.
 
 ## Client (React)
 

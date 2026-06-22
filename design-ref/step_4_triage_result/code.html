@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Triage Result - TRIAGE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-container": "#a4c9fe",
+                      "on-background": "#121c28",
+                      "tertiary-fixed-dim": "#c5c7c8",
+                      "on-tertiary-container": "#989a9b",
+                      "surface": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "outline": "#747782",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#454748",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#d9e3f4",
+                      "on-secondary-fixed": "#001c38",
+                      "on-surface-variant": "#444651",
+                      "on-error-container": "#93000a",
+                      "on-secondary-container": "#2d5482",
+                      "surface-container-low": "#eef4ff",
+                      "tertiary-fixed": "#e1e3e4",
+                      "on-primary-fixed": "#001946",
+                      "on-error": "#ffffff",
+                      "surface-bright": "#f8f9ff",
+                      "tertiary": "#1a1d1e",
+                      "on-tertiary-fixed": "#191c1d",
+                      "on-primary-container": "#7a97e2",
+                      "surface-tint": "#3d5ca2",
+                      "tertiary-container": "#2f3233",
+                      "secondary": "#3a608f",
+                      "surface-container": "#e5eeff",
+                      "primary-fixed": "#dae2ff",
+                      "primary": "#001a48",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed-dim": "#a4c9fe",
+                      "secondary-fixed": "#d3e3ff",
+                      "inverse-primary": "#b1c5ff",
+                      "on-surface": "#121c28",
+                      "on-primary-fixed-variant": "#224489",
+                      "on-secondary-fixed-variant": "#1f4875",
+                      "surface-container-highest": "#d9e3f4",
+                      "surface-container-high": "#dfe9fa",
+                      "inverse-surface": "#27313e",
+                      "outline-variant": "#c4c6d2",
+                      "primary-container": "#002d72",
+                      "surface-dim": "#d1dbec",
+                      "inverse-on-surface": "#eaf1ff",
+                      "primary-fixed-dim": "#b1c5ff",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "32px",
+                      "gutter": "16px",
+                      "base": "4px",
+                      "margin-mobile": "16px",
+                      "container-max": "1440px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "data-tabular": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "data-tabular": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<div class="flex min-h-screen overflow-hidden">
+<!-- Side Navigation (Predicted Component) -->
+<aside class="hidden md:flex flex-col h-screen w-64 bg-surface dark:bg-on-background border-r border-outline-variant dark:border-outline">
+<div class="p-6 flex flex-col gap-1">
+<div class="flex items-center gap-3 mb-8">
+<img alt="TRIAGE Logo" class="w-10 h-10 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFSc9Vd6ri5MbScM5uftCwpXMZJhe9VfKsgdhoEMqPMfbH9pCn4Qlz6aE2AGOZkbiNGne-_0U2-sOTS4s2TW1Ie6GlOmopEH8jnx-I8rJnzxf5bkSFEgisnKSWBxkq100XXqOtmcB5pAZfB1sOVOOG3Cgd8b3i3xLB9CXOf8dRr0sVW4E-Xjd6r62wKn8TLjek49IWq-Jlg7Ef3b1ajkymqNwpKRLl4T6VXUS2zl6Uh3NKqG6Lo-Pj66h7rRiOp0vlaaYiHLaQaTk"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-black text-primary">Ops Portal</span>
+<span class="text-on-surface-variant font-label-md text-label-md">Internal Triage</span>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="px-3 py-2 flex items-center gap-3 bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-lg font-bold transition-transform scale-95 cursor-pointer">
+<span class="material-symbols-outlined">add_box</span>
+<span class="font-label-md text-label-md">New Dispute</span>
+</div>
+<div class="px-3 py-2 flex items-center gap-3 text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all cursor-pointer">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Dispute History</span>
+</div>
+<div class="px-3 py-2 flex items-center gap-3 text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-dim transition-all cursor-pointer">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-outline-variant">
+<div class="px-3 py-2 flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high transition-all cursor-pointer mb-1 rounded-lg">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+<div class="px-3 py-2 flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high transition-all cursor-pointer rounded-lg">
+<span class="material-symbols-outlined">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</div>
+<div class="mt-4 flex items-center gap-3 px-3">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-xs">JD</div>
+<div class="flex flex-col">
+<span class="text-on-surface font-bold text-xs uppercase">J. Doe</span>
+<span class="text-on-surface-variant text-[10px]">Operations Officer</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto">
+<!-- Top App Bar (Predicted Component) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-10">
+<div class="flex items-center gap-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Triage Result: [Reference Number DSP-001]</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:bg-surface-container-low transition-colors p-2 rounded-full">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:bg-surface-container-low transition-colors p-2 rounded-full">help</span>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="bg-primary text-white font-bold px-6 py-2 rounded-lg text-body-md active:opacity-80 transition-opacity">
+                        Log New Dispute
+                    </button>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 max-w-[1200px] mx-auto w-full flex flex-col gap-8">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-4 text-label-md font-label-md tracking-wider">
+<div class="flex items-center gap-2 text-primary/60">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span>SELECT CUSTOMER</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-2 text-primary/60">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span>SELECT TRANSACTION</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-2 text-primary/60">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span>CAPTURE DISPUTE</span>
+</div>
+<span class="text-outline-variant">/</span>
+<div class="flex items-center gap-2 text-primary font-black border-b-2 border-primary">
+<span>TRIAGE RESULT</span>
+</div>
+</nav>
+<!-- Status Badges Row -->
+<div class="flex gap-4">
+<span class="status-badge bg-red-100 text-red-700 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+                        Priority: HIGH
+                    </span>
+<span class="status-badge bg-surface-container-high text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+                        Age: NEW
+                    </span>
+<span class="status-badge bg-surface-container-high text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">fingerprint</span>
+                        ID: DSP-001
+                    </span>
+</div>
+<!-- Recommendation Banner -->
+<div class="bg-emerald-50 border-l-8 border-emerald-600 p-8 rounded-lg flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-6">
+<div class="bg-emerald-600 text-white p-4 rounded-full">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div>
+<h2 class="text-emerald-900 font-headline-lg text-headline-lg font-black uppercase tracking-tight">RECOMMENDED ACTION: Immediate Reversal</h2>
+<p class="text-emerald-700 font-body-lg text-body-lg mt-1">Institutional risk assessment complete. Transaction meets criteria for automated rectification.</p>
+</div>
+</div>
+<div class="hidden lg:block text-right">
+<span class="block text-emerald-800 font-bold text-xs uppercase opacity-60">Confidence Score</span>
+<span class="text-emerald-600 font-black text-4xl">99.8%</span>
+</div>
+</div>
+<!-- Rules Transparency & Details Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<!-- Left: Rules Transparency -->
+<div class="lg:col-span-1 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col h-full shadow-sm">
+<div class="bg-surface-container-low px-6 py-4 border-b border-outline-variant">
+<h3 class="font-headline-md text-headline-md uppercase text-primary">Rules Transparency</h3>
+</div>
+<div class="p-6 flex flex-col gap-6">
+<div class="flex flex-col gap-4">
+<div class="flex items-start gap-3 p-4 bg-emerald-50 rounded border border-emerald-100">
+<span class="material-symbols-outlined text-emerald-600">check_circle</span>
+<div>
+<p class="font-bold text-on-surface text-sm">Rule: Card Payment + Duplicate Debit → Immediate Reversal</p>
+<p class="text-on-surface-variant text-xs mt-1">Matches internal compliance protocol CP-442-B.</p>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<h4 class="text-xs font-bold text-primary uppercase tracking-widest border-b border-outline-variant pb-2">Matching Factors</h4>
+<div class="flex justify-between items-center py-1">
+<span class="text-on-surface-variant text-sm">Payment Method</span>
+<span class="font-bold text-sm text-primary">Card</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-on-surface-variant text-sm">Issue Category</span>
+<span class="font-bold text-sm text-primary">Duplicate Debit</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-on-surface-variant text-sm">Network Verified</span>
+<span class="text-emerald-600 font-bold text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">done_all</span>
+                                        YES
+                                    </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Detailed Summary Cards -->
+<div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
+<!-- Transaction Card -->
+<div class="bg-white border border-outline-variant rounded-lg shadow-sm flex flex-col">
+<div class="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md uppercase text-primary">Transaction Details</h3>
+<span class="material-symbols-outlined text-primary/40">receipt_long</span>
+</div>
+<div class="p-6 space-y-6">
+<div class="flex flex-col gap-1">
+<label class="text-[10px] font-black text-on-surface-variant uppercase tracking-tighter">Amount</label>
+<span class="text-3xl font-black text-primary">$1,240.00</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase">Date</label>
+<span class="text-sm font-semibold text-primary">Oct 24, 2023</span>
+</div>
+<div class="flex flex-col">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase">Time</label>
+<span class="text-sm font-semibold text-primary">14:22:10 UTC</span>
+</div>
+<div class="flex flex-col">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase">Merchant</label>
+<span class="text-sm font-semibold text-primary">LUXE RETAIL CO.</span>
+</div>
+<div class="flex flex-col">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase">Location</label>
+<span class="text-sm font-semibold text-primary">New York, NY</span>
+</div>
+</div>
+<div class="p-4 bg-surface rounded-lg border border-outline-variant/30">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-on-surface-variant">Auth Code</span>
+<span class="font-mono font-bold">#AZ-99120</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Trace ID</span>
+<span class="font-mono font-bold">TRC8821004</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dispute Card -->
+<div class="bg-white border border-outline-variant rounded-lg shadow-sm flex flex-col">
+<div class="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md uppercase text-primary">Dispute Evidence</h3>
+<span class="material-symbols-outlined text-primary/40">report_problem</span>
+</div>
+<div class="p-6 space-y-6">
+<div class="flex flex-col gap-1">
+<label class="text-[10px] font-black text-on-surface-variant uppercase tracking-tighter">Claim Type</label>
+<span class="text-headline-md font-bold text-primary">Duplicate Transaction</span>
+</div>
+<div class="space-y-4">
+<div class="flex flex-col">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase">Customer Statement</label>
+<p class="text-sm text-on-surface-variant leading-relaxed italic border-l-4 border-outline-variant pl-4 mt-1">
+                                            "I only swiped once for the purchase, but the mobile app shows two identical charges of $1,240.00 from the same merchant at the same time."
+                                        </p>
+</div>
+<div class="flex flex-col">
+<label class="text-[10px] font-bold text-on-surface-variant uppercase">Supporting Documents</label>
+<div class="mt-2 flex gap-2">
+<div class="flex items-center gap-2 p-2 border border-outline-variant rounded bg-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-sm text-primary">description</span>
+<span class="text-[10px] font-bold">receipt_scan.pdf</span>
+</div>
+<div class="flex items-center gap-2 p-2 border border-outline-variant rounded bg-surface hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-sm text-primary">screenshot</span>
+<span class="text-[10px] font-bold">app_screenshot.jpg</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="mt-4 p-8 bg-surface-container-lowest border border-outline-variant rounded-lg flex items-center justify-between shadow-sm">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-bold text-on-surface-variant uppercase">Next Recommended Step</span>
+<span class="text-sm font-medium text-on-surface">The reversal will be processed immediately upon confirmation. Return to start to handle the next case.</span>
+</div>
+<div class="flex gap-4">
+<button class="bg-secondary text-white font-bold px-8 py-3 rounded-lg text-body-md hover:bg-primary transition-colors flex items-center gap-2 shadow-md">
+<span class="material-symbols-outlined">restart_alt</span>
+                            Log New Dispute
+                        </button>
+</div>
+</div>
+</div>
+<!-- Mobile Bottom Nav (Predicted Component) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest flex items-center justify-around z-20 border-t border-outline-variant">
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">add_box</span>
+<span class="text-[10px] font-bold">New Dispute</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-medium">History</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Dash</span>
+</div>
+</nav>
+</main>
+</div>
+<!-- Micro-interaction overlay effect -->
+<div class="fixed inset-0 pointer-events-none opacity-0 transition-opacity duration-1000 bg-emerald-500/5" id="reversal-trigger-area"></div>
+<script>
+        // Simple micro-interaction for the recommendation banner
+        document.addEventListener('DOMContentLoaded', () => {
+            const banner = document.querySelector('.bg-emerald-50');
+            banner.addEventListener('mouseenter', () => {
+                document.getElementById('reversal-trigger-area').style.opacity = '1';
+            });
+            banner.addEventListener('mouseleave', () => {
+                document.getElementById('reversal-trigger-area').style.opacity = '0';
+            });
+        });
+    </script>
+</body></html>
