@@ -14,7 +14,11 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
+    "db:seed": "node --import tsx prisma/seed.ts",
     "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "node --import tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
