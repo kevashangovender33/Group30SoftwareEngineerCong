@@ -1,0 +1,15 @@
+{
+  "//": "Shared, target-agnostic compiler options. Each workspace (server/client) extends this and adds its own target/module/emit settings. This file is not a build entry point on its own.",
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "files": []
+}
