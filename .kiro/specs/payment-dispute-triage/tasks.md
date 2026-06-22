@@ -1,0 +1,237 @@
+# Implementation Plan: Payment Dispute Triage System
+
+## Overview
+
+Implement a full-stack payment dispute triage system following the layered architecture: Express routes → services → Prisma (backend), React screens → components → hooks (frontend). Implementation proceeds bottom-up: shared infrastructure first, then the rules engine, then API routes, then frontend types/hooks, then UI components, and finally tests.
+
+## Tasks
+
+- [x] 1. Backend foundation — shared Prisma client, constants, and error handler
+  - [x] 1.1 Create shared Prisma client singleton
+    - Create `server/src/lib/prisma.ts` exporting a single PrismaClient instance
+    - Import paths must use `.js` extension (e.g., `import { prisma } from '../lib/prisma.js'`)
+    - _Requirements: 4.1_
+  - [x] 1.2 Create constants module
+    - Create `server/src/constants.ts` defining:
+      - `HIGH_VALUE_THRESHOLD = 10000`
+      - `MEDIUM_VALUE_MIN = 5000`
+      - `AGE_NEW_MAX = 7`
+      - `AGE_AGING_MAX = 14`
+      - `VALID_PAYMENT_TYPES = ['CARD', 'EFT', 'INTERNAL'] as const`
+      - `VALID_ISSUE_CATEGORIES = ['DUPLICATE_DEBIT', 'FAILED_TRANSFER', 'MISSING_PAYMENT', 'UNAUTHORISED', 'INCORRECT_AMOUNT', 'CARD_DISPUTE'] as const`
+      - `VALID_TRANSACTION_STATUSES = ['COMPLETED', 'PENDING', 'FAILED', 'ALREADY_REFUNDED'] as const`
+    - _Requirements: 1.1, 1.2, 6.1, 7.1_
+  - [x] 1.3 Verify error handler middleware
+    - The `server/src/middleware/errorHandler.ts` already exists — verify it handles `status`, `code`, and `message` fields correctly and returns JSON `{ error: { code, message, status, timestamp } }`
+    - Adjust the interface if needed to support a `fields` array for 400 validation errors
+    - _Requirements: 4.4, 4.5, 4.6, 4.7_
+
+- [x] 2. Rules engine service — triageEngine with evaluate, calculatePriority, calculateAgeIndicator
+  - [x] 2.1 Create triageEngine service
+    - Create `server/src/services/triageEngine.ts`
+    - Define `TriageInput`, `RuleTriggered`, `TriageResult` interfaces
+    - Define the `Rule` type with `priority`, `id`, `name`, `match` function, `action`, `label`, and `conditions` extractor
+    - Implement the RULES array with all 10 rules (RULE-PRE-01 through RULE-DEFAULT) sorted by priority
+    - Implement `evaluate(input: TriageInput): TriageResult` — iterate rules, first-match-wins, compute priority and age independently
+    - Implement `calculatePriority(amount, issueCategory, ageInDays): Priority`
+    - Implement `calculateAgeIndicator(transactionDate: Date): AgeIndicator`
+    - Export all three functions
+    - Import constants from `../constants.js`
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 5.12, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5_
+  - [x] 2.2 Write property tests for triageEngine
+    - Create `server/tests/triageEngine.test.ts`
+    - Install `fast-check` as a dev dependency in the server workspace
+    - **Property 1: Evaluation Totality** — for any valid TriageInput, evaluate() returns exactly one result with a valid recommendationCode
+    - **Property 2: First-Match-Wins Rule Ordering** — if UNAUTHORISED + not ALREADY_REFUNDED, always ESCALATE_FRAUD
+    - **Property 3: ALREADY_REFUNDED Short-Circuit** — always returns CLOSE_RESOLVED regardless of other inputs
+    - **Property 4: Priority Determinism** — priority depends only on amount, issueCategory, ageInDays
+    - **Property 5: Age Indicator Determinism** — age indicator depends only on transactionDate
+    - **Property 8: Rule Transparency** — rulesTriggered always has at least one entry with ruleId, ruleName, conditions
+    - Use `fc.gen()` to generate valid TriageInput combinations
+    - Minimum 100 iterations per property
+    - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 6.1–6.5, 7.1–7.5, 5.12**
+  - [x] 2.3 Write unit tests for triageEngine (specific rule paths)
+    - Test each rule individually with a targeted input that triggers exactly that rule
+    - Test boundary conditions for priority (4999, 5000, 10000, 10001)
+    - Test age boundaries (day 0, day 7, day 8, day 14, day 15)
+    - Test ALREADY_REFUNDED short-circuit skips fraud check
+    - _Requirements: 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3_
+
+- [x] 3. Checkpoint — Ensure rules engine tests pass
+  - Run `npm run test --workspace=server` and ensure all tests pass
+  - Ask the user if questions arise
+
+- [x] 4. API routes — reference-data, customers, transactions, disputes, triage
+  - [x] 4.1 Create reference-data route
+    - Create `server/src/routes/reference-data.ts`
+    - Implement `GET /` returning `{ paymentTypes, issueCategories, dataSource: 'MOCK' }`
+    - Use values from constants module
+    - _Requirements: 1.1, 1.2, 1.3_
+  - [x] 4.2 Create customers route
+    - Create `server/src/routes/customers.ts`
+    - Implement `GET /` with optional `?search=` query param
+    - Query Prisma with case-insensitive partial match on name, email, or accountNumber using `OR` + `contains` + `mode: 'insensitive'` (SQLite uses LIKE which is case-insensitive by default)
+    - Return `{ customers: [...] }`
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [x] 4.3 Create transactions route
+    - Create `server/src/routes/transactions.ts`
+    - Implement `GET /` with optional `?customerId=` and `?status=` query params
+    - Filter by customerId and/or status when provided
+    - Return `{ transactions: [...] }`
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [x] 4.4 Create disputes route
+    - Create `server/src/routes/disputes.ts`
+    - Implement `POST /` — validate required fields (transactionId, paymentType, issueCategory), validate paymentType against allowed values, validate issueCategory against allowed values, verify transaction exists, call triageEngine.evaluate(), generate referenceNumber (DSP-NNN), create dispute record via Prisma, return 201 with dispute and triage result
+    - Implement `GET /:id` — fetch dispute with included transaction and customer relations, return full detail response
+    - Implement `POST /:id/acknowledge` — verify dispute exists, return `{ disputeId, acknowledged: true, nextAction: 'RETURN_TO_CAPTURE' }`
+    - Use `try/catch` with `next(error)` for error propagation
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 9.1, 9.2, 9.3, 10.1, 10.2_
+  - [x] 4.5 Create triage route
+    - Create `server/src/routes/triage.ts`
+    - Implement `POST /evaluate` — validate input, look up transaction, call triageEngine.evaluate(), return result without creating a dispute
+    - _Requirements: 8.1, 8.2, 8.3_
+  - [x] 4.6 Wire all routes into the API router
+    - Update `server/src/routes/api.ts` to import and mount:
+      - `referenceDataRouter` at `/reference-data`
+      - `customersRouter` at `/customers`
+      - `transactionsRouter` at `/transactions`
+      - `disputesRouter` at `/disputes`
+      - `triageRouter` at `/triage`
+    - Keep existing health/echo/info routes
+    - _Requirements: 1.1, 2.1, 3.1, 4.1, 8.1_
+  - [x] 4.7 Write unit tests for API routes
+    - Create `server/tests/routes.test.ts`
+    - Mock the Prisma client
+    - Test reference-data returns correct shape
+    - Test customers route with and without search param
+    - Test transactions route with and without filters
+    - Test disputes POST with valid input (mock triageEngine)
+    - Test disputes POST with missing fields → 400
+    - Test disputes POST with invalid paymentType → 422
+    - Test disputes POST with non-existent transaction → 404
+    - Test disputes GET /:id success and 404
+    - Test triage/evaluate success and error cases
+    - **Property 6: Invalid Input Rejection** — for any paymentType not in valid set, returns 422
+    - **Validates: Requirements 4.4, 4.5, 4.6, 4.7, 8.2, 8.3, 9.3, 10.2**
+
+- [x] 5. Checkpoint — Ensure all server tests pass
+  - Run `npm run test --workspace=server` and ensure all tests pass
+  - Ask the user if questions arise
+
+- [x] 6. Frontend types and hooks
+  - [x] 6.1 Create shared TypeScript types
+    - Create `client/src/types/index.ts`
+    - Define: `PaymentType`, `IssueCategory`, `TransactionStatus`, `DisputeStatus`, `Priority`, `AgeIndicator`, `RecommendationCode`
+    - Define: `Customer`, `Transaction`, `RuleTriggered`, `TriageResult`, `DisputeResponse`, `DisputeDetail`, `ReferenceData`
+    - _Requirements: 1.1, 2.3, 3.3, 4.2, 9.1_
+  - [x] 6.2 Create API hooks
+    - Create `client/src/hooks/useApi.ts`
+    - Implement hooks:
+      - `useReferenceData()` — fetches GET /api/reference-data
+      - `useCustomers(search: string)` — fetches GET /api/customers?search=
+      - `useTransactions(customerId: string)` — fetches GET /api/transactions?customerId=
+      - `useCreateDispute()` — POST /api/disputes, returns { mutate, data, loading, error }
+      - `useDisputeDetail(disputeId: string)` — GET /api/disputes/:id
+      - `useAcknowledge()` — POST /api/disputes/:id/acknowledge
+    - Each hook returns `{ data, loading, error }` pattern
+    - _Requirements: 11.2, 12.1, 13.4, 14.1_
+
+- [x] 7. Frontend components — CustomerSelect, TransactionSelect, DisputeCaptureForm, TriageResultScreen, badges
+  - [x] 7.1 Create CustomerSelect component
+    - Create `client/src/components/CustomerSelect.tsx`
+    - Text input with `data-testid="customer-search-input"`
+    - Display list of matching customers with `data-testid="customer-list"`
+    - Each customer row clickable with `data-testid="customer-item-{id}"`
+    - Call `onSelect(customer)` on click
+    - Match design-ref/step_1_select_customer mockup styling
+    - _Requirements: 11.1, 11.2, 11.3_
+  - [x] 7.2 Create TransactionSelect component
+    - Create `client/src/components/TransactionSelect.tsx`
+    - Display transactions in a list/table with amount (formatted as ZAR), paymentType, status, description, date
+    - Each row clickable with `data-testid="transaction-item-{id}"`
+    - Back button with `data-testid="back-button"`
+    - Call `onSelect(transaction)` on row click, `onBack()` on back button
+    - Match design-ref/step_2_select_transaction mockup styling
+    - _Requirements: 12.1, 12.2, 12.3, 12.4_
+  - [x] 7.3 Create DisputeCaptureForm component
+    - Create `client/src/components/DisputeCaptureForm.tsx`
+    - Payment type dropdown pre-populated from transaction, `data-testid="payment-type-select"`
+    - Issue category dropdown with all 6 options, `data-testid="issue-category-select"`
+    - Optional description textarea, `data-testid="description-input"`
+    - Submit button with `data-testid="submit-dispute-button"` — disabled while loading
+    - Inline validation error for issue category when not selected: "Issue category is required" with `data-testid="issue-category-error"`
+    - Loading spinner shown during submission with `data-testid="loading-indicator"`
+    - Back button with `data-testid="back-button"`
+    - Match design-ref/step_3_capture_dispute mockup styling
+    - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
+  - [x] 7.4 Create PriorityBadge and AgeBadge components
+    - Create `client/src/components/PriorityBadge.tsx`
+      - Accepts `priority: 'HIGH' | 'MEDIUM' | 'LOW'`
+      - Colour: HIGH=red, MEDIUM=amber, LOW=green
+      - `data-testid="priority-badge"`
+    - Create `client/src/components/AgeBadge.tsx`
+      - Accepts `ageIndicator: 'NEW' | 'AGING' | 'OVERDUE'`
+      - Colour: NEW=grey, AGING=amber, OVERDUE=red
+      - `data-testid="age-badge"`
+    - _Requirements: 14.3, 14.4_
+  - [x] 7.5 Create TriageResultScreen component
+    - Create `client/src/components/TriageResultScreen.tsx`
+    - Fetch dispute detail using `useDisputeDetail(disputeId)`
+    - Display recommendation prominently with `data-testid="recommendation-display"` — colour coded (Red=Escalate, Amber=Monitor/Investigate, Green=Resolve/Close)
+    - Display triggered rules list with `data-testid="rules-list"`
+    - Display decision factors (payment type, issue, amount, status, age)
+    - Display PriorityBadge and AgeBadge
+    - Display dispute summary (reference number, transaction details, customer info)
+    - "Log New Dispute" button with `data-testid="new-dispute-button"` — calls onNewDispute()
+    - All content on single screen, no tabs/modals
+    - Match design-ref/step_4_triage_result mockup styling
+    - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7_
+
+- [x] 8. App.tsx screen router integrating all components
+  - [x] 8.1 Implement App.tsx as a 4-step screen router
+    - Define `Screen` type: 'SELECT_CUSTOMER' | 'SELECT_TRANSACTION' | 'CAPTURE_DISPUTE' | 'TRIAGE_RESULT'
+    - Manage state: currentScreen, selectedCustomer, selectedTransaction, disputeResult
+    - Render CustomerSelect → TransactionSelect → DisputeCaptureForm → TriageResultScreen
+    - "Log New Dispute" resets all state to initial and returns to SELECT_CUSTOMER
+    - Fetch reference data on mount (for form dropdowns)
+    - Wire `onSelect`, `onBack`, `onSubmit`, `onNewDispute` callbacks between components
+    - _Requirements: 11.3, 12.3, 12.4, 13.5, 14.6_
+
+- [x] 9. Checkpoint — Ensure frontend builds without errors
+  - Run TypeScript compilation check: `npx tsc --noEmit` in client workspace
+  - Ask the user if questions arise
+
+- [x] 10. Unit tests for rules engine and API routes
+  - [x] 10.1 Write component unit tests
+    - Create `client/tests/PriorityBadge.test.tsx` — renders correct colour for each priority level
+    - Create `client/tests/AgeBadge.test.tsx` — renders correct colour for each age indicator
+    - Create `client/tests/DisputeCaptureForm.test.tsx` — validation error shows when issue category not selected, submit button disables during loading
+    - Create `client/tests/CustomerSelect.test.tsx` — search input renders, customer list renders on data
+    - _Requirements: 13.3, 13.4, 14.3, 14.4_
+
+- [x] 11. E2E tests for the happy path journey
+  - [x] 11.1 Write Playwright E2E test for full dispute journey
+    - Create `client/e2e/dispute-triage.spec.ts`
+    - Test the complete happy path: search customer → select customer → select transaction → confirm payment type → select issue category → submit dispute → verify recommendation displayed → verify priority badge → verify age badge → verify rules displayed → click "Log New Dispute" → verify return to customer selection
+    - Use seeded database data for deterministic assertions
+    - Assert on `data-testid` attributes for element selection
+    - Include assertions for loading states during submission
+    - _Requirements: 11.1, 11.2, 11.3, 12.1, 12.3, 13.1, 13.2, 13.5, 14.1, 14.2, 14.3, 14.4, 14.6_
+
+- [x] 12. Final checkpoint — Ensure all tests pass
+  - Run `npm run test --workspace=server` (server unit tests)
+  - Run `npm run test --workspace=client` (client unit tests)
+  - Run `npm run test:e2e --workspace=client` (E2E tests)
+  - Ensure all tests pass, ask the user if questions arise
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP
+- Import paths in server code must include `.js` extension (Node ESM requirement)
+- The Prisma schema is already defined and the database is seeded — no schema changes needed
+- Use the existing `server/src/middleware/errorHandler.ts` for centralized error handling
+- All configurable thresholds (R10,000, R5,000, 7 days, 14 days) are defined in the constants module
+- Frontend components should include `data-testid` attributes for E2E test selectors
+- Match the design-ref/ mockup screenshots for UI styling and layout
+- Property tests validate universal correctness properties of the rules engine
+- Unit tests validate specific examples, edge cases, and error conditions
