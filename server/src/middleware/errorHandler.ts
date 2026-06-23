@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 export interface AppError extends Error {
   status?: number;
   code?: string;
+  fields?: string[];
 }
 
 export const errorHandler = (err: AppError, _req: Request, res: Response, _next: NextFunction) => {
@@ -18,6 +19,7 @@ export const errorHandler = (err: AppError, _req: Request, res: Response, _next:
       message,
       status,
       timestamp: new Date().toISOString(),
+      ...(err.fields && { fields: err.fields }),
     },
   });
 };

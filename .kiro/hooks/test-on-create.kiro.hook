@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Test on Create",
+  "description": "Runs the project unit tests when a new test file is created, ensuring new tests pass immediately.",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "npm run test"
+  }
+}

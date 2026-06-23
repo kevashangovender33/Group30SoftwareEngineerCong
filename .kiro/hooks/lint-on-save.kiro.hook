@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "name": "Lint on Save",
-  "description": "Runs ESLint on TypeScript and TSX files whenever they are saved, reporting any lint errors.",
+  "description": "Runs ESLint on TypeScript and TSX files whenever they are saved, catching lint errors immediately.",
   "version": "1",
   "when": {
     "type": "fileEdited",
@@ -12,6 +12,6 @@
   },
   "then": {
     "type": "runCommand",
-    "command": "npm run lint"
+    "command": "npx eslint --no-warn-ignored \"$KIRO_FILE_PATH\""
   }
 }
