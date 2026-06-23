@@ -1,170 +1,165 @@
-# Node Conf Starter
+# Payment Dispute Triage System
 
-A full-stack **Node.js + React** starter template with modern tooling and sensible defaults. Clone it, install, and you're running in two commands — no database or config required to start.
+A full-stack **Node.js + React** prototype that helps banking operations staff triage and route customer payment disputes using transparent, rules-based decisions.
 
 ## Tech Stack
 
 **Backend** (`server/`)
 - Node.js + Express (TypeScript, ES modules)
-- SQLite + Prisma ORM (optional — not required to run)
+- SQLite + Prisma ORM
 - Vitest for unit tests
 
 **Frontend** (`client/`)
 - React 18 + Vite (TypeScript)
 - Tailwind CSS
+- Chart.js for analytics
 - Vitest + Testing Library for component tests
 - Playwright for end-to-end tests
 
 The repo is an **npm workspaces monorepo**: one `npm install` at the root sets up both apps.
 
+---
+
 ## Prerequisites
 
-- **Node.js 20+** (the repo pins **Node 22 LTS** via `.nvmrc`)
-- **npm 10+** (ships with Node 20/22)
+1. **Node.js 22** (or at minimum v20+)
+   - Install via [nvm](https://github.com/nvm-sh/nvm) (recommended) or direct download from [nodejs.org](https://nodejs.org)
+   - If using nvm:
+     ```bash
+     nvm install 22
+     nvm use
+     ```
+   - Verify: `node -v` should show v22.x
 
-If you use a Node version manager, select the pinned version first:
+2. **npm 10+** (ships with Node 20/22 — no separate install needed)
+   - Verify: `npm -v`
+
+---
+
+## Setup Steps
+
+### 1. Clone the repo
+
+### 2. Install all dependencies
+
+One command installs both server and client workspaces:
 
 ```bash
-nvm use      # or: fnm use
+npm install
 ```
 
-> No version manager? Just make sure `node -v` reports v20 or newer.
-
-## Quick Start
+### 3. Set up the database
 
 ```bash
-# 1. Clone
-git clone https://github.com/thandog/node-conf-starter.git
-cd node-conf-starter
+# Create the server environment file
+cp server/.env.example server/.env
 
-# 2. Install everything (both workspaces) from the committed lockfile
-npm install        # or `npm ci` for an exact, reproducible install
+# Generate the Prisma client (creates the typed DB access layer)
+npm run db:generate --workspace=server
 
-# 3. Run both apps
+# Run migrations (creates the SQLite database and tables)
+npm run db:migrate --workspace=server
+
+# Seed mock data (customers, transactions)
+npm run db:seed --workspace=server
+```
+
+The database is a local SQLite file at `server/prisma/dev.db` — no external database server needed.
+
+### 4. Start the application
+
+```bash
 npm run dev
 ```
 
-- Frontend: http://localhost:5173
-- Backend:  http://localhost:3001
-- The Vite dev server proxies `/api/*` to the backend, so the app works out of the box.
+This starts both:
+- **Backend** → http://localhost:3001 (Express API)
+- **Frontend** → http://localhost:5173 (Vite dev server)
 
-That's it — no environment file or database needed to get started.
+The Vite dev server proxies `/api/*` requests to port 3001, so the frontend talks to the backend seamlessly.
 
-> The backend listens on port **3001** by default. Port 5000 is intentionally avoided because macOS uses it for AirPlay Receiver. Override with `PORT` in `server/.env` if needed.
+---
 
-## Common Scripts
+## Running Tests
 
-Run from the repo root:
-
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | Start backend + frontend together (hot reload) |
-| `npm run build` | Type-check and build both apps for production |
-| `npm start` | Run the built backend (`server/dist`) |
-| `npm test` | Run all unit/component tests once (backend + frontend) |
-| `npm run test:e2e` | Run Playwright end-to-end tests (see note below) |
-| `npm run lint` | Lint all code with ESLint |
-| `npm run format` | Format all code with Prettier (`format:check` to verify) |
-
-Per-workspace scripts (append `--workspace=server` or `--workspace=client`):
-
-| Command | Workspace | What it does |
-| --- | --- | --- |
-| `npm run dev` | both | Start that app's dev server |
-| `npm run build` | both | Build that app |
-| `npm test` | both | Run tests once |
-| `npm run test:watch` | both | Run tests in watch mode |
-| `npm run test:coverage` | both | Run tests with a coverage report |
-| `npm run preview` | client | Preview the production build |
-
-## Building for Production
+### Unit tests (both workspaces)
 
 ```bash
-npm run build
+npm run test
 ```
 
-- Backend compiles to `server/dist/` (run with `npm start`).
-- Frontend builds static assets to `client/dist/` (serve with any static host, or `npm run preview --workspace=client`).
+### End-to-end tests (Playwright)
 
-## Testing
-
-Unit and component tests run once and exit (CI-friendly):
-
-```bash
-npm test                              # both workspaces
-npm run test:watch --workspace=client # watch mode while developing
-```
-
-### End-to-end (Playwright)
-
-Playwright needs its browsers installed once per machine before the first run:
+First time only — install browser binaries:
 
 ```bash
 npx playwright install
+```
+
+Then run:
+
+```bash
 npm run test:e2e
 ```
 
-E2E tests live in `client/e2e/`. Playwright starts the client dev server automatically.
+> E2E tests expect the dev servers to be running. If tests fail on missing servers, run `npm run dev` in a separate terminal first.
 
-## Database (optional)
+---
 
-SQLite + Prisma is preconfigured but **not required to run the app**. To use it:
+## Other Useful Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run lint` | Lint all code (ESLint) |
+| `npm run format` | Auto-format with Prettier |
+| `npm run build` | Production build (server → `server/dist/`, client → `client/dist/`) |
+| `npm run db:studio --workspace=server` | Open Prisma Studio (visual DB browser) |
+
+---
+
+## TL;DR (copy-paste block)
 
 ```bash
-# 1. Create the server env file
+nvm use
+npm install
 cp server/.env.example server/.env
-
-# 2. Generate the Prisma client and create the database
 npm run db:generate --workspace=server
 npm run db:migrate --workspace=server
+npm run db:seed --workspace=server
+npm run dev
 ```
 
-Other database scripts (run with `--workspace=server`):
+After that, open http://localhost:5173 and you're in.
 
-| Command | What it does |
-| --- | --- |
-| `npm run db:studio` | Open Prisma Studio to view/edit data |
-| `npm run db:migrate:deploy` | Apply migrations in production |
-
-The Prisma schema lives in `server/prisma/schema.prisma`. The SQLite file and generated client are git-ignored.
+---
 
 ## Project Structure
 
 ```
-node-conf-starter/
+Group30SoftwareEngineerCong/
 ├── server/                 # Express backend (TypeScript, ESM)
 │   ├── src/
 │   │   ├── index.ts        # Server entry point
 │   │   ├── routes/         # API routes (/api/*)
-│   │   └── middleware/     # Error handling, etc.
-│   ├── prisma/             # Prisma schema (optional DB)
+│   │   ├── services/       # Business logic (triage engine)
+│   │   └── middleware/     # Error handling
+│   ├── prisma/             # Schema, migrations, seed script
 │   ├── tests/              # Vitest unit tests
-│   └── tsconfig.json       # Emits runnable JS to dist/ (NodeNext)
+│   └── tsconfig.json
 ├── client/                 # React + Vite frontend
-│   ├── src/                # App source
+│   ├── src/
+│   │   ├── components/     # UI components
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── types/          # Shared TypeScript interfaces
+│   │   └── utils/          # Formatters and helpers
 │   ├── tests/              # Vitest + Testing Library component tests
 │   ├── e2e/                # Playwright end-to-end tests
-│   └── tsconfig.json       # Type-check only (Vite handles bundling)
-├── tsconfig.json           # Shared, strict compiler base
-├── .nvmrc                  # Pinned Node version
+│   └── tsconfig.json
+├── docs/                   # Project documentation
+├── .nvmrc                  # Pinned Node version (22)
 └── package.json            # npm workspaces + root scripts
 ```
-
-## API
-
-The backend exposes a few sample endpoints:
-
-| Method | Path | Description |
-| --- | --- | --- |
-| GET | `/health` | Server liveness check |
-| GET | `/api/health` | API health + uptime |
-| GET | `/api/info` | API name/version/environment |
-| POST | `/api/echo` | Echoes the JSON body back |
 
 ## License
 
 MIT
-
-## Contributing
-
-Issues and enhancement requests welcome.
