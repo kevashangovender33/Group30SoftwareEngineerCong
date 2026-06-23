@@ -48,11 +48,23 @@ model Dispute {
   priority          String   @default("LOW") // HIGH | MEDIUM | LOW
   ageIndicator      String   @default("NEW") // NEW | AGING | OVERDUE
   recommendedAction String?
-  triggeredRules    String?  // JSON array of rule descriptions
   createdAt         DateTime @default(now())
   resolvedAt        DateTime?
   updatedAt         DateTime @updatedAt
 
-  customer    Customer    @relation(fields: [customerId], references: [id])
-  transaction Transaction @relation(fields: [transactionId], references: [id])
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  transaction    Transaction    @relation(fields: [transactionId], references: [id])
+  triggeredRules TriggeredRule[]
+}
+
+model TriggeredRule {
+  id         String   @id @default(uuid())
+  disputeId  String
+  ruleId     String
+  ruleName   String
+  conditions String   // JSON-encoded string
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
 }

@@ -21,8 +21,30 @@ vi.mock('../src/services/triageEngine.js', () => ({
   evaluate: vi.fn(),
 }));
 
+// Mock dispute query validator
+vi.mock('../src/services/disputeQueryValidator.js', () => ({
+  validateDisputeQueryParams: vi.fn(),
+}));
+
+// Mock dispute query service
+vi.mock('../src/services/disputeQueryService.js', () => ({
+  queryDisputes: vi.fn(),
+}));
+
+// Mock dispute repository
+vi.mock('../src/repositories/disputeRepository.js', () => ({
+  disputeRepository: {
+    create: vi.fn(),
+    findById: vi.fn(),
+    findAll: vi.fn(),
+  },
+}));
+
 import { prisma } from '../src/lib/prisma.js';
 import { evaluate } from '../src/services/triageEngine.js';
+import { validateDisputeQueryParams } from '../src/services/disputeQueryValidator.js';
+import { queryDisputes } from '../src/services/disputeQueryService.js';
+import { disputeRepository } from '../src/repositories/disputeRepository.js';
 
 // Helper to make requests to the router
 function createApp() {
@@ -38,6 +60,7 @@ function createApp() {
         message: err.message,
         status,
         ...(err.fields && { fields: err.fields }),
+        ...(err.field && { field: err.field }),
       },
     });
   });
@@ -178,7 +201,7 @@ describe('Disputes Route', () => {
       vi.mocked(prisma.transaction.findUnique).mockResolvedValue(mockTransaction as any);
       vi.mocked(evaluate).mockReturnValue(mockTriageResult as any);
       vi.mocked(prisma.dispute.count).mockResolvedValue(0);
-      vi.mocked(prisma.dispute.create).mockResolvedValue({
+      vi.mocked(disputeRepository.create).mockResolvedValue({
         id: 'dispute-001',
         referenceNumber: 'DSP-001',
         status: 'TRIAGED',
@@ -202,7 +225,7 @@ describe('Disputes Route', () => {
       vi.mocked(prisma.transaction.findUnique).mockResolvedValue(mockTransaction as any);
       vi.mocked(evaluate).mockReturnValue(mockTriageResult as any);
       vi.mocked(prisma.dispute.count).mockResolvedValue(9);
-      vi.mocked(prisma.dispute.create).mockResolvedValue({
+      vi.mocked(disputeRepository.create).mockResolvedValue({
         id: 'dispute-010',
         referenceNumber: 'DSP-010',
         status: 'TRIAGED',
@@ -211,11 +234,9 @@ describe('Disputes Route', () => {
       const app = createApp();
       await makeRequest(app, 'POST', '/', validBody);
 
-      expect(prisma.dispute.create).toHaveBeenCalledWith(
+      expect(disputeRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
-            referenceNumber: 'DSP-010',
-          }),
+          referenceNumber: 'DSP-010',
         }),
       );
     });
@@ -224,7 +245,7 @@ describe('Disputes Route', () => {
       vi.mocked(prisma.transaction.findUnique).mockResolvedValue(mockTransaction as any);
       vi.mocked(evaluate).mockReturnValue(mockTriageResult as any);
       vi.mocked(prisma.dispute.count).mockResolvedValue(0);
-      vi.mocked(prisma.dispute.create).mockResolvedValue({
+      vi.mocked(disputeRepository.create).mockResolvedValue({
         id: 'dispute-001',
         referenceNumber: 'DSP-001',
         status: 'TRIAGED',
@@ -243,6 +264,105 @@ describe('Disputes Route', () => {
     });
   });
 
+  describe('GET /disputes', () => {
+    it('should return 200 with dispute list on valid query', async () => {
+      const mockResult = {
+        disputes: [
+          {
+            id: 'dispute-001',
+            referenceNumber: 'DSP-001',
+            status: 'OPEN',
+            priority: 'HIGH',
+            ageIndicator: 'NEW',
+            paymentType: 'CARD',
+            issueCategory: 'DUPLICATE_DEBIT',
+            recommendedAction: 'Immediate Reversal',
+            createdAt: '2025-01-15T00:00:00.000Z',
+            customerName: 'John Doe',
+            transactionAmount: 5000,
+            triggeredRuleCount: 2,
+          },
+        ],
+        totalCount: 1,
+        page: 1,
+        totalPages: 1,
+      };
+
+      vi.mocked(validateDisputeQueryParams).mockReturnValue({
+        valid: true,
+        params: { sortBy: 'createdAt', sortOrder: 'desc', page: 1, pageSize: 10 },
+      });
+      vi.mocked(queryDisputes).mockResolvedValue(mockResult);
+
+      const app = createApp();
+      const result = await makeRequest(app, 'GET', '/');
+
+      expect(result.status).toBe(200);
+      expect(result.body.disputes).toHaveLength(1);
+      expect(result.body.totalCount).toBe(1);
+      expect(result.body.page).toBe(1);
+      expect(result.body.totalPages).toBe(1);
+    });
+
+    it('should return 400 with error details for invalid query params', async () => {
+      vi.mocked(validateDisputeQueryParams).mockReturnValue({
+        valid: false,
+        error: {
+          field: 'status',
+          message: "Invalid value for 'status': must be OPEN, TRIAGED, or CLOSED",
+        },
+      });
+
+      const app = createApp();
+      const result = await makeRequest(app, 'GET', '/?status=INVALID');
+
+      expect(result.status).toBe(400);
+      expect(result.body.error.code).toBe('INVALID_QUERY_PARAM');
+      expect(result.body.error.field).toBe('status');
+      expect(result.body.error.message).toBe(
+        "Invalid value for 'status': must be OPEN, TRIAGED, or CLOSED",
+      );
+    });
+
+    it('should return empty disputes array with correct metadata when page exceeds total', async () => {
+      const mockResult = {
+        disputes: [],
+        totalCount: 5,
+        page: 10,
+        totalPages: 1,
+      };
+
+      vi.mocked(validateDisputeQueryParams).mockReturnValue({
+        valid: true,
+        params: { sortBy: 'createdAt', sortOrder: 'desc', page: 10, pageSize: 10 },
+      });
+      vi.mocked(queryDisputes).mockResolvedValue(mockResult);
+
+      const app = createApp();
+      const result = await makeRequest(app, 'GET', '/?page=10');
+
+      expect(result.status).toBe(200);
+      expect(result.body.disputes).toEqual([]);
+      expect(result.body.totalCount).toBe(5);
+      expect(result.body.page).toBe(10);
+      expect(result.body.totalPages).toBe(1);
+    });
+
+    it('should pass errors to next() when query service throws', async () => {
+      vi.mocked(validateDisputeQueryParams).mockReturnValue({
+        valid: true,
+        params: { sortBy: 'createdAt', sortOrder: 'desc', page: 1, pageSize: 10 },
+      });
+      vi.mocked(queryDisputes).mockRejectedValue(new Error('Database connection failed'));
+
+      const app = createApp();
+      const result = await makeRequest(app, 'GET', '/');
+
+      expect(result.status).toBe(500);
+      expect(result.body.error.message).toBe('Database connection failed');
+    });
+  });
+
   describe('GET /disputes/:id', () => {
     const mockDispute = {
       id: 'dispute-001',
@@ -253,13 +373,13 @@ describe('Disputes Route', () => {
       priority: 'LOW',
       ageIndicator: 'NEW',
       recommendedAction: 'Immediate Reversal',
-      triggeredRules: JSON.stringify([
+      triggeredRules: [
         {
           ruleId: 'RULE-002',
           ruleName: 'Card + Duplicate Debit',
           conditions: { paymentType: 'CARD', issueCategory: 'DUPLICATE_DEBIT' },
         },
-      ]),
+      ],
       createdAt: new Date('2025-01-15'),
       transaction: {
         id: 'txn-001',
@@ -277,7 +397,7 @@ describe('Disputes Route', () => {
     };
 
     it('should return 404 when dispute not found', async () => {
-      vi.mocked(prisma.dispute.findUnique).mockResolvedValue(null);
+      vi.mocked(disputeRepository.findById).mockResolvedValue(null);
 
       const app = createApp();
       const result = await makeRequest(app, 'GET', '/non-existent-id');
@@ -287,7 +407,7 @@ describe('Disputes Route', () => {
     });
 
     it('should return dispute details with transaction and customer', async () => {
-      vi.mocked(prisma.dispute.findUnique).mockResolvedValue(mockDispute as any);
+      vi.mocked(disputeRepository.findById).mockResolvedValue(mockDispute as any);
 
       const app = createApp();
       const result = await makeRequest(app, 'GET', '/dispute-001');
@@ -310,7 +430,7 @@ describe('Disputes Route', () => {
     });
 
     it('should parse triggeredRules from JSON string', async () => {
-      vi.mocked(prisma.dispute.findUnique).mockResolvedValue(mockDispute as any);
+      vi.mocked(disputeRepository.findById).mockResolvedValue(mockDispute as any);
 
       const app = createApp();
       const result = await makeRequest(app, 'GET', '/dispute-001');

@@ -1,14 +1,18 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { evaluate } from '../services/triageEngine.js';
+import { determineInitialStatus } from '../services/statusLifecycle.js';
+import { disputeRepository } from '../repositories/disputeRepository.js';
 import { VALID_PAYMENT_TYPES, VALID_ISSUE_CATEGORIES } from '../constants.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { validateDisputeQueryParams } from '../services/disputeQueryValidator.js';
+import { queryDisputes } from '../services/disputeQueryService.js';
 
 export const disputesRouter = Router();
 
 /**
  * POST / — Create dispute and triage
- * REQ-004, REQ-005, REQ-006, REQ-010, REQ-011
+ * Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 6.1, 6.3, 6.4
  */
 disputesRouter.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -66,7 +70,10 @@ disputesRouter.post('/', async (req: Request, res: Response, next: NextFunction)
       transactionDate: new Date(transaction.transactionDate),
     });
 
-    // Generate reference number (use a retry loop to handle concurrent inserts)
+    // Determine initial status based on recommendation code
+    const { status, resolvedAt } = determineInitialStatus(triageResult.recommendationCode);
+
+    // Generate reference number with retry loop to handle concurrent inserts
     let dispute;
     let referenceNumber: string;
     let attempts = 0;
@@ -78,19 +85,18 @@ disputesRouter.post('/', async (req: Request, res: Response, next: NextFunction)
       referenceNumber = `DSP-${String(disputeCount + 1).padStart(3, '0')}`;
 
       try {
-        dispute = await prisma.dispute.create({
-          data: {
-            referenceNumber,
-            customerId: transaction.customerId,
-            transactionId,
-            paymentType,
-            issueCategory,
-            status: 'TRIAGED',
-            priority: triageResult.priority,
-            ageIndicator: triageResult.ageIndicator,
-            recommendedAction: triageResult.recommendation,
-            triggeredRules: JSON.stringify(triageResult.rulesTriggered),
-          },
+        dispute = await disputeRepository.create({
+          referenceNumber,
+          customerId: transaction.customerId,
+          transactionId,
+          paymentType,
+          issueCategory,
+          status,
+          priority: triageResult.priority,
+          ageIndicator: triageResult.ageIndicator,
+          recommendedAction: triageResult.recommendation,
+          resolvedAt,
+          triggeredRules: triageResult.rulesTriggered,
         });
         break;
       } catch (err: unknown) {
@@ -134,20 +140,40 @@ disputesRouter.post('/', async (req: Request, res: Response, next: NextFunction)
 });
 
 /**
+ * GET / — List disputes with filtering, sorting, and pagination
+ * Requirements: 10.1, 10.4, 10.5, 10.6
+ */
+disputesRouter.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Validate all query parameters
+    const validation = validateDisputeQueryParams(req.query);
+
+    if (!validation.valid) {
+      const error: AppError = new Error(validation.error.message) as AppError;
+      error.status = 400;
+      error.code = 'INVALID_QUERY_PARAM';
+      (error as any).field = validation.error.field;
+      throw error;
+    }
+
+    // Execute the query with validated params
+    const result = await queryDisputes(validation.params);
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /:id — Get dispute details
- * REQ-011, REQ-012, REQ-015, REQ-016, REQ-021
+ * Requirements: 6.2, 2.3
  */
 disputesRouter.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
-    const dispute = await prisma.dispute.findUnique({
-      where: { id },
-      include: {
-        transaction: true,
-        customer: true,
-      },
-    });
+    const dispute = await disputeRepository.findById(id);
 
     if (!dispute) {
       const error: AppError = new Error('Dispute not found') as AppError;
@@ -156,10 +182,12 @@ disputesRouter.get('/:id', async (req: Request, res: Response, next: NextFunctio
       throw error;
     }
 
-    // Parse triggeredRules from JSON string
-    const rulesTriggered = dispute.triggeredRules
-      ? JSON.parse(dispute.triggeredRules)
-      : [];
+    // triggeredRules are already parsed objects from the repository
+    const rulesTriggered = dispute.triggeredRules.map(rule => ({
+      ruleId: rule.ruleId,
+      ruleName: rule.ruleName,
+      conditions: rule.conditions,
+    }));
 
     res.json({
       disputeId: dispute.id,

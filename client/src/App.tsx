@@ -4,9 +4,11 @@ import { CustomerSelect } from './components/CustomerSelect';
 import { TransactionSelect } from './components/TransactionSelect';
 import { DisputeCaptureForm } from './components/DisputeCaptureForm';
 import { TriageResultScreen } from './components/TriageResultScreen';
+import { DisputeHistoryScreen } from './components/DisputeHistoryScreen';
+import { AnalyticsDashboardScreen } from './components/AnalyticsDashboardScreen';
 import type { Customer, Transaction, DisputeResponse } from './types/index';
 
-type Screen = 'SELECT_CUSTOMER' | 'SELECT_TRANSACTION' | 'CAPTURE_DISPUTE' | 'TRIAGE_RESULT';
+type Screen = 'SELECT_CUSTOMER' | 'SELECT_TRANSACTION' | 'CAPTURE_DISPUTE' | 'TRIAGE_RESULT' | 'DISPUTE_HISTORY' | 'CUSTOMER_DISPUTE_HISTORY' | 'ANALYTICS_DASHBOARD';
 
 const STEPS = [
   { label: 'Select Customer', key: 'SELECT_CUSTOMER' },
@@ -24,6 +26,8 @@ function App() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [disputeResult, setDisputeResult] = useState<DisputeResponse | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [selectedCustomerName, setSelectedCustomerName] = useState<string | null>(null);
 
   const { data: referenceData } = useReferenceData();
 
@@ -57,7 +61,51 @@ function App() {
     setCurrentScreen('SELECT_CUSTOMER');
   };
 
+  const handleNavigateToHistory = () => {
+    setSelectedCustomerId(null);
+    setSelectedCustomerName(null);
+    setCurrentScreen('DISPUTE_HISTORY');
+  };
+
+  const handleNavigateToNewDispute = () => {
+    setSelectedCustomer(null);
+    setSelectedTransaction(null);
+    setDisputeResult(null);
+    setSelectedCustomerId(null);
+    setSelectedCustomerName(null);
+    setCurrentScreen('SELECT_CUSTOMER');
+  };
+
+  const handleNavigateToCustomerHistory = (customerId: string, customerName: string) => {
+    setSelectedCustomerId(customerId);
+    setSelectedCustomerName(customerName);
+    setCurrentScreen('CUSTOMER_DISPUTE_HISTORY');
+  };
+
+  void handleNavigateToCustomerHistory; // Will be used in task 7.4 (View History link on CustomerSelect)
+
+  const handleHistoryBack = () => {
+    setSelectedCustomerId(null);
+    setSelectedCustomerName(null);
+    setCurrentScreen('SELECT_CUSTOMER');
+  };
+
+  const handleHistoryProceed = () => {
+    if (selectedCustomerId && selectedCustomerName) {
+      setSelectedCustomer({ id: selectedCustomerId, name: selectedCustomerName, email: '', accountNumber: '' });
+      setCurrentScreen('SELECT_TRANSACTION');
+    }
+  };
+
+  const handleNavigateToDashboard = () => {
+    setCurrentScreen('ANALYTICS_DASHBOARD');
+  };
+
   const currentStepIndex = getStepIndex(currentScreen);
+
+  const isCaptureFlow = ['SELECT_CUSTOMER', 'SELECT_TRANSACTION', 'CAPTURE_DISPUTE', 'TRIAGE_RESULT'].includes(currentScreen);
+  const isHistoryScreen = currentScreen === 'DISPUTE_HISTORY' || currentScreen === 'CUSTOMER_DISPUTE_HISTORY';
+  const isDashboardScreen = currentScreen === 'ANALYTICS_DASHBOARD';
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -89,6 +137,21 @@ function App() {
             onNewDispute={handleNewDispute}
           />
         );
+      case 'DISPUTE_HISTORY':
+        return (
+          <DisputeHistoryScreen />
+        );
+      case 'CUSTOMER_DISPUTE_HISTORY':
+        return (
+          <DisputeHistoryScreen
+            customerId={selectedCustomerId || undefined}
+            customerName={selectedCustomerName || undefined}
+            onBack={handleHistoryBack}
+            onProceed={handleHistoryProceed}
+          />
+        );
+      case 'ANALYTICS_DASHBOARD':
+        return <AnalyticsDashboardScreen />;
     }
   };
 
@@ -104,15 +167,36 @@ function App() {
           <p className="text-label-md text-on-surface-variant">Internal Triage</p>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
-          <div className="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold cursor-pointer transition-transform active:scale-95">
+          <div
+            onClick={handleNavigateToNewDispute}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-bold cursor-pointer transition-transform active:scale-95 ${
+              isCaptureFlow
+                ? 'bg-secondary-container text-on-secondary-container'
+                : 'text-on-surface-variant hover:bg-surface-container-high'
+            }`}
+          >
             <span className="material-symbols-outlined">add_box</span>
             <span className="text-label-md">New Dispute</span>
           </div>
-          <div className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer">
+          <div
+            onClick={handleNavigateToHistory}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${
+              isHistoryScreen
+                ? 'bg-secondary-container text-on-secondary-container font-bold'
+                : 'text-on-surface-variant hover:bg-surface-container-high'
+            }`}
+          >
             <span className="material-symbols-outlined">history</span>
             <span className="text-label-md">Dispute History</span>
           </div>
-          <div className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer">
+          <div
+            onClick={handleNavigateToDashboard}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${
+              isDashboardScreen
+                ? 'bg-secondary-container text-on-secondary-container font-bold'
+                : 'text-on-surface-variant hover:bg-surface-container-high'
+            }`}
+          >
             <span className="material-symbols-outlined">dashboard</span>
             <span className="text-label-md">Dashboard</span>
           </div>
@@ -168,7 +252,8 @@ function App() {
 
         {/* Journey Canvas */}
         <div className="flex-1 p-8 max-w-container-max mx-auto w-full">
-          {/* Breadcrumb Stepper */}
+          {/* Breadcrumb Stepper (capture flow only) */}
+          {isCaptureFlow && (
           <nav className="flex items-center gap-4 mb-8 py-2 overflow-x-auto whitespace-nowrap">
             {STEPS.map((step, i) => {
               const isCompleted = i < currentStepIndex;
@@ -198,6 +283,7 @@ function App() {
               );
             })}
           </nav>
+          )}
 
           {/* Screen Content */}
           {renderScreen()}
@@ -206,17 +292,32 @@ function App() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center z-50">
-        <div className="flex flex-col items-center text-primary">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>add_box</span>
+        <div
+          onClick={handleNavigateToNewDispute}
+          className={`flex flex-col items-center cursor-pointer ${
+            isCaptureFlow ? 'text-primary' : 'text-on-surface-variant opacity-60'
+          }`}
+        >
+          <span className="material-symbols-outlined" style={isCaptureFlow ? { fontVariationSettings: "'FILL' 1" } : undefined}>add_box</span>
           <span className="text-[10px] font-bold">New</span>
         </div>
-        <div className="flex flex-col items-center text-on-surface-variant opacity-60">
-          <span className="material-symbols-outlined">history</span>
-          <span className="text-[10px] font-medium">History</span>
+        <div
+          onClick={handleNavigateToHistory}
+          className={`flex flex-col items-center cursor-pointer ${
+            isHistoryScreen ? 'text-primary' : 'text-on-surface-variant opacity-60'
+          }`}
+        >
+          <span className="material-symbols-outlined" style={isHistoryScreen ? { fontVariationSettings: "'FILL' 1" } : undefined}>history</span>
+          <span className="text-[10px] font-bold">History</span>
         </div>
-        <div className="flex flex-col items-center text-on-surface-variant opacity-60">
-          <span className="material-symbols-outlined">dashboard</span>
-          <span className="text-[10px] font-medium">Dash</span>
+        <div
+          onClick={handleNavigateToDashboard}
+          className={`flex flex-col items-center cursor-pointer ${
+            isDashboardScreen ? 'text-primary' : 'text-on-surface-variant opacity-60'
+          }`}
+        >
+          <span className="material-symbols-outlined" style={isDashboardScreen ? { fontVariationSettings: "'FILL' 1" } : undefined}>dashboard</span>
+          <span className="text-[10px] font-bold">Dash</span>
         </div>
         <div className="flex flex-col items-center text-on-surface-variant opacity-60">
           <span className="material-symbols-outlined">settings</span>

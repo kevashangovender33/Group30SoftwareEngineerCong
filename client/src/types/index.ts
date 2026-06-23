@@ -86,3 +86,95 @@ export interface ReferenceData {
   issueCategories: IssueCategory[];
   dataSource: string;
 }
+
+// ─── Dispute History View Types ────────────────────────────────────────────────
+
+export interface DisputeListItem {
+  id: string;
+  referenceNumber: string;
+  status: DisputeStatus;
+  priority: Priority;
+  ageIndicator: AgeIndicator;
+  paymentType: PaymentType;
+  issueCategory: string;
+  recommendedAction: string;
+  createdAt: string;           // ISO 8601
+  customerName: string;
+  transactionAmount: number;
+  triggeredRuleCount: number;
+}
+
+export interface DisputeListResponse {
+  disputes: DisputeListItem[];
+  totalCount: number;
+  page: number;
+  totalPages: number;
+}
+
+export interface DisputeFilters {
+  customerName: string;
+  paymentType: string;
+  issueCategory: string;
+  priority: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+}
+
+export type SortField = 'createdAt' | 'priority' | 'status';
+export type SortOrder = 'asc' | 'desc';
+
+export interface DisputeHistoryState {
+  filters: DisputeFilters;
+  sortBy: SortField;
+  sortOrder: SortOrder;
+  currentPage: number;
+  pageSize: number;
+}
+
+export const DEFAULT_DISPUTE_HISTORY_STATE: DisputeHistoryState = {
+  filters: {
+    customerName: '',
+    paymentType: '',
+    issueCategory: '',
+    priority: '',
+    status: '',
+    startDate: '',
+    endDate: '',
+  },
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
+  currentPage: 1,
+  pageSize: 10,
+};
+
+export type Screen =
+  | 'SELECT_CUSTOMER'
+  | 'SELECT_TRANSACTION'
+  | 'CAPTURE_DISPUTE'
+  | 'TRIAGE_RESULT'
+  | 'DISPUTE_HISTORY'
+  | 'CUSTOMER_DISPUTE_HISTORY'
+  | 'ANALYTICS_DASHBOARD';
+
+// ─── Analytics Dashboard Types ─────────────────────────────────────────────────
+
+export interface AnalyticsBreakdown {
+  label: string;
+  count: number;
+}
+
+export interface AnalyticsSummary {
+  totalDisputes: number;
+  openDisputes: number;
+  resolvedDisputes: number;
+  highPriorityDisputes: number;
+}
+
+export interface AnalyticsResponse {
+  paymentType: AnalyticsBreakdown[];
+  issueCategory: AnalyticsBreakdown[];
+  status: AnalyticsBreakdown[];
+  priority: AnalyticsBreakdown[];
+  summary: AnalyticsSummary;
+}

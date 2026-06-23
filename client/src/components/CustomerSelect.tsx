@@ -4,9 +4,10 @@ import type { Customer } from '../types/index';
 
 interface CustomerSelectProps {
   onSelect: (customer: Customer) => void;
+  onViewHistory?: (customerId: string, customerName: string) => void;
 }
 
-export function CustomerSelect({ onSelect }: CustomerSelectProps) {
+export function CustomerSelect({ onSelect, onViewHistory }: CustomerSelectProps) {
   const [search, setSearch] = useState('');
   const { data: customers, loading, error } = useCustomers(search);
 
@@ -101,6 +102,19 @@ export function CustomerSelect({ onSelect }: CustomerSelectProps) {
               <button className="w-full border border-secondary text-secondary py-2 rounded-lg font-bold text-label-md group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all">
                 Select Customer
               </button>
+              {onViewHistory && (
+                <button
+                  data-testid="view-history-link"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewHistory(customer.id, customer.name);
+                  }}
+                  className="w-full mt-2 border border-outline-variant text-secondary py-2 rounded-lg font-bold text-label-md hover:bg-surface-container-high transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">history</span>
+                  View History
+                </button>
+              )}
             </div>
           ))}
         </div>

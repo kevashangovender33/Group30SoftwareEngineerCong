@@ -4,6 +4,7 @@ export interface AppError extends Error {
   status?: number;
   code?: string;
   fields?: string[];
+  field?: string;
 }
 
 export const errorHandler = (err: AppError, _req: Request, res: Response, _next: NextFunction) => {
@@ -20,6 +21,7 @@ export const errorHandler = (err: AppError, _req: Request, res: Response, _next:
       status,
       timestamp: new Date().toISOString(),
       ...(err.fields && { fields: err.fields }),
+      ...(err.field && { field: err.field }),
     },
   });
 };

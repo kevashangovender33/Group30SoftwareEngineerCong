@@ -286,6 +286,7 @@ async function main() {
   console.log('🌱 Seeding database...');
 
   // Clear existing data (in reverse FK order)
+  await prisma.triggeredRule.deleteMany();
   await prisma.dispute.deleteMany();
   await prisma.transaction.deleteMany();
   await prisma.customer.deleteMany();
@@ -301,6 +302,215 @@ async function main() {
     await prisma.transaction.create({ data: transaction });
   }
   console.log(`  ✓ Created ${transactions.length} transactions`);
+
+  // ─── Seed Disputes ──────────────────────────────────────────────────────────
+  // Cover all 3 statuses (OPEN, TRIAGED, CLOSED), varying priorities, age indicators,
+  // and at least 7 different recommendationCode values.
+  // REQ-005: Seed Script with Pre-Existing Dispute Records (5.1–5.6)
+
+  const disputes = [
+    // ── TRIAGED disputes ──
+    {
+      id: 'dispute-seed-001',
+      referenceNumber: 'DSP-SEED-001',
+      customerId: 'cust-001',
+      transactionId: 'txn-002',
+      paymentType: 'CARD',
+      issueCategory: 'UNAUTHORISED',
+      status: 'TRIAGED',
+      priority: 'HIGH',
+      ageIndicator: 'NEW',
+      recommendedAction: 'Escalate to Fraud Team',
+      resolvedAt: null,
+    },
+    {
+      id: 'dispute-seed-002',
+      referenceNumber: 'DSP-SEED-002',
+      customerId: 'cust-001',
+      transactionId: 'txn-001',
+      paymentType: 'CARD',
+      issueCategory: 'DUPLICATE_DEBIT',
+      status: 'TRIAGED',
+      priority: 'LOW',
+      ageIndicator: 'NEW',
+      recommendedAction: 'Immediate Reversal',
+      resolvedAt: null,
+    },
+
+    // ── CLOSED disputes (resolvedAt set) ──
+    {
+      id: 'dispute-seed-003',
+      referenceNumber: 'DSP-SEED-003',
+      customerId: 'cust-003',
+      transactionId: 'txn-009',
+      paymentType: 'CARD',
+      issueCategory: 'DUPLICATE_DEBIT',
+      status: 'CLOSED',
+      priority: 'LOW',
+      ageIndicator: 'NEW',
+      recommendedAction: 'Close Dispute — Resolved',
+      resolvedAt: daysAgo(5),
+    },
+    {
+      id: 'dispute-seed-004',
+      referenceNumber: 'DSP-SEED-004',
+      customerId: 'cust-006',
+      transactionId: 'txn-019',
+      paymentType: 'CARD',
+      issueCategory: 'DUPLICATE_DEBIT',
+      status: 'CLOSED',
+      priority: 'MEDIUM',
+      ageIndicator: 'AGING',
+      recommendedAction: 'Close Dispute — Resolved',
+      resolvedAt: daysAgo(3),
+    },
+
+    // ── OPEN disputes ──
+    {
+      id: 'dispute-seed-005',
+      referenceNumber: 'DSP-SEED-005',
+      customerId: 'cust-002',
+      transactionId: 'txn-004',
+      paymentType: 'EFT',
+      issueCategory: 'FAILED_TRANSFER',
+      status: 'OPEN',
+      priority: 'MEDIUM',
+      ageIndicator: 'AGING',
+      recommendedAction: 'Monitor for 24 Hours',
+      resolvedAt: null,
+    },
+    {
+      id: 'dispute-seed-006',
+      referenceNumber: 'DSP-SEED-006',
+      customerId: 'cust-002',
+      transactionId: 'txn-005',
+      paymentType: 'EFT',
+      issueCategory: 'UNAUTHORISED',
+      status: 'OPEN',
+      priority: 'HIGH',
+      ageIndicator: 'OVERDUE',
+      recommendedAction: 'Escalate to Senior Ops',
+      resolvedAt: null,
+    },
+
+    // ── Additional TRIAGED dispute for INVESTIGATE coverage ──
+    {
+      id: 'dispute-seed-007',
+      referenceNumber: 'DSP-SEED-007',
+      customerId: 'cust-002',
+      transactionId: 'txn-006',
+      paymentType: 'EFT',
+      issueCategory: 'MISSING_PAYMENT',
+      status: 'TRIAGED',
+      priority: 'LOW',
+      ageIndicator: 'OVERDUE',
+      recommendedAction: 'Investigate Further',
+      resolvedAt: null,
+    },
+
+    // ── Additional OPEN dispute for REFER_PAYMENTS coverage ──
+    {
+      id: 'dispute-seed-008',
+      referenceNumber: 'DSP-SEED-008',
+      customerId: 'cust-003',
+      transactionId: 'txn-007',
+      paymentType: 'INTERNAL',
+      issueCategory: 'FAILED_TRANSFER',
+      status: 'OPEN',
+      priority: 'MEDIUM',
+      ageIndicator: 'AGING',
+      recommendedAction: 'Refer to Payments Team',
+      resolvedAt: null,
+    },
+  ];
+
+  for (const dispute of disputes) {
+    await prisma.dispute.create({ data: dispute });
+  }
+  console.log(`  ✓ Created ${disputes.length} disputes`);
+
+  // ─── Seed Triggered Rules ────────────────────────────────────────────────────
+  // At least 1 triggered rule per dispute, referencing realistic rule IDs
+  // from the triage engine's decision matrix.
+
+  const triggeredRules = [
+    // dispute-seed-001: TRIAGED — Unauthorised → Escalate to Fraud (ESCALATE_FRAUD)
+    {
+      id: 'tr-seed-001',
+      disputeId: 'dispute-seed-001',
+      ruleId: 'RULE-001',
+      ruleName: 'Unauthorised (Fraud)',
+      conditions: JSON.stringify({ issueCategory: 'UNAUTHORISED' }),
+    },
+    // dispute-seed-002: TRIAGED — Card + Duplicate Debit → Immediate Reversal (IMMEDIATE_REVERSAL)
+    {
+      id: 'tr-seed-002',
+      disputeId: 'dispute-seed-002',
+      ruleId: 'RULE-002',
+      ruleName: 'Card + Duplicate Debit',
+      conditions: JSON.stringify({ paymentType: 'CARD', issueCategory: 'DUPLICATE_DEBIT' }),
+    },
+    // dispute-seed-003: CLOSED — Already Refunded → Close (CLOSE_RESOLVED)
+    {
+      id: 'tr-seed-003',
+      disputeId: 'dispute-seed-003',
+      ruleId: 'RULE-PRE-01',
+      ruleName: 'Already Refunded',
+      conditions: JSON.stringify({ transactionStatus: 'ALREADY_REFUNDED' }),
+    },
+    // dispute-seed-004: CLOSED — Already Refunded → Close (CLOSE_RESOLVED)
+    {
+      id: 'tr-seed-004',
+      disputeId: 'dispute-seed-004',
+      ruleId: 'RULE-PRE-01',
+      ruleName: 'Already Refunded',
+      conditions: JSON.stringify({ transactionStatus: 'ALREADY_REFUNDED' }),
+    },
+    // dispute-seed-005: OPEN — EFT + Pending → Monitor 24h (MONITOR_24H)
+    {
+      id: 'tr-seed-005',
+      disputeId: 'dispute-seed-005',
+      ruleId: 'RULE-003',
+      ruleName: 'EFT + Pending',
+      conditions: JSON.stringify({ paymentType: 'EFT', transactionStatus: 'PENDING' }),
+    },
+    // dispute-seed-006: OPEN — High Value → Escalate Senior (ESCALATE_SENIOR)
+    {
+      id: 'tr-seed-006a',
+      disputeId: 'dispute-seed-006',
+      ruleId: 'RULE-001',
+      ruleName: 'Unauthorised (Fraud)',
+      conditions: JSON.stringify({ issueCategory: 'UNAUTHORISED' }),
+    },
+    {
+      id: 'tr-seed-006b',
+      disputeId: 'dispute-seed-006',
+      ruleId: 'RULE-004',
+      ruleName: 'High Value (>R10,000)',
+      conditions: JSON.stringify({ transactionAmount: 25000 }),
+    },
+    // dispute-seed-007: TRIAGED — EFT + Missing Payment → Investigate (INVESTIGATE)
+    {
+      id: 'tr-seed-007',
+      disputeId: 'dispute-seed-007',
+      ruleId: 'RULE-006',
+      ruleName: 'EFT + Missing Payment',
+      conditions: JSON.stringify({ paymentType: 'EFT', issueCategory: 'MISSING_PAYMENT' }),
+    },
+    // dispute-seed-008: OPEN — Internal + Failed Transfer → Refer to Payments (REFER_PAYMENTS)
+    {
+      id: 'tr-seed-008',
+      disputeId: 'dispute-seed-008',
+      ruleId: 'RULE-005',
+      ruleName: 'Internal + Failed Transfer',
+      conditions: JSON.stringify({ paymentType: 'INTERNAL', issueCategory: 'FAILED_TRANSFER' }),
+    },
+  ];
+
+  for (const rule of triggeredRules) {
+    await prisma.triggeredRule.create({ data: rule });
+  }
+  console.log(`  ✓ Created ${triggeredRules.length} triggered rules`);
 
   console.log('✅ Seed complete!');
 }
